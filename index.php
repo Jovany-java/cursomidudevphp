@@ -1,22 +1,33 @@
 <?php
 
 const API_URL = "https://whenisthenextmcufilm.com/api";
-#Inicializar una nueva sesión de cURL; ch = cURL handler
+
+// Inicializar una nueva sesión de cURL
 $ch = curl_init(API_URL);
-//Indicar que queremos recibir el resultado de la petición pero no mostrarla en pantalla como un echo
+
+// Configurar cURL
 curl_setopt($ch, CURLOPT_CAINFO, 'C:\php\extras\ssl\cacert.pem');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//Ejecutamos la petición y guardamos el result
-$result = curl_exec($ch);
-//Otra alterniva para obtener una api file_get_contens
-//$result = file_get_contents(API_URL); //Si solo quieres obtener el resultado, hacer un GET de la API
 
-//Que lo guarde el resultado en un array asociativo
-$data = json_decode($result, true);
+// Ejecutar la petición y guardar el resultado
+$result = curl_exec($ch);
+
+// Verificar si hubo un error en cURL
+if ($result === false) {
+    // Mostrar el error de cURL
+    echo "cURL Error: " . curl_error($ch);
+} else {
+    // Decodificar el JSON
+    $data = json_decode($result, true);
+
+    // Verificar si la decodificación fue exitosa
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        echo "JSON Decode Error: " . json_last_error_msg();
+        $data = null; // Para evitar otros errores
+    }
+}
 
 curl_close($ch);
-
-
 ?>
 
 <!DOCTYPE html>
@@ -24,56 +35,40 @@ curl_close($ch);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proxima peli de marvel</title>
-    <!-- Centered viewport -->
-    <lin8k rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
-
-
+    <title>Próxima peli de Marvel</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
 </head>
 <body>
 
     <main>
-        <!--
-        <pre style="font: size 8px; overflow:scroll; height: 300px; width:500px;">
-
-            <?php var_dump($data) ?>
-
-        </pre>
-
-        -->
-
         <section>
-            <img src="<?= $data["poster_url"]; ?>" width="300" height="auto" alt="Poster de la película"<?=$data["poster_url"]?>" style="border-radius: 16px;">
-        </section>
+            <?php if ($data): ?>
+                <img src="<?= htmlspecialchars($data["poster_url"]); ?>" width="300" height="auto" alt="Poster de la película" style="border-radius: 16px;">
+            </section>
 
-        <hgroup>    
-            
-            <h2><?=$data["title"];?> Se estrena en<?=$data["days_until"];?>días</h2>
-            <p>Fecha de estreno <?=$data["release_date"];?></p>
-            <p>La siguiente pelicula es: <?=$data["following_production"]   ["title"];?></p>
-        </hgroup>
-
-
+            <hgroup>    
+                <h2><?= htmlspecialchars($data["title"]); ?> se estrena en <?= htmlspecialchars($data["days_until"]); ?> días</h2>
+                <p>Fecha de estreno: <?= htmlspecialchars($data["release_date"]); ?></p>
+                <p>La siguiente película es: <?= htmlspecialchars($data["following_production"]["title"]); ?></p>
+            </hgroup>
+            <?php else: ?>
+                <p>No se pudo obtener la información de la película.</p>
+            <?php endif; ?>
     </main>
 
-    
 </body>
 </html>
 
-
-
 <style>
-
-    body{
-
+    body {
         background-color: black;
         display: flex;
         place-content: center;
         color: #fff;
         text-align: center;
     }
-
 </style>
+
 
 
  
